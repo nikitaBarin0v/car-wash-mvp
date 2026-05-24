@@ -3,8 +3,14 @@ import '@mantine/dates/styles.css'
 import '@mantine/notifications/styles.css'
 import { Button, Container, Group, MantineProvider, Notification, Stack, Text, Title } from '@mantine/core'
 import { Car, Clock, ShieldCheck, Phone } from 'lucide-react'
+import type { WashProgram } from './types/types'
+import { ProgramSelector } from './components/ProgramSelector'
 
 function App() {
+
+  const handleSelectProgram = (program: WashProgram) => {
+    console.log('Выбрана мойка:', program.title);
+  }
 
   return (
     <MantineProvider defaultColorScheme='dark'>
@@ -61,11 +67,7 @@ function App() {
               </Stack>
             </Group>
 
-            <div className='grid grid-cols-1 md:grid-cols-3 gap-6 opacity-50 border-2 border-dashed border-slate-700 rounded-2xl p-12 text-center'>
-              <Text className='col-span-full italic text-slate-500'>
-                Здесь будут отображаться карточки услуг из базы данных...
-              </Text>
-            </div>
+            <ProgramSelector onSelect={handleSelectProgram} />
           </Container>
         </main>
 
