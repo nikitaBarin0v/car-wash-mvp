@@ -5,16 +5,29 @@ import { Button, Container, Group, MantineProvider, Notification, Stack, Text, T
 import { Car, Clock, ShieldCheck, Phone } from 'lucide-react'
 import type { WashProgram } from './types/types'
 import { ProgramSelector } from './components/ProgramSelector'
+import { useDisclosure } from '@mantine/hooks'
+import { useState } from 'react'
+import { BookingModal } from './components/BookingModal'
+import { Notifications } from '@mantine/notifications'
 
-function App() {
+export default function App() {
 
   const handleSelectProgram = (program: WashProgram) => {
     console.log('Выбрана мойка:', program.title);
   }
 
+  const [ opened, { open, close } ] = useDisclosure(false);
+  const [ selectedProgram, setSelectedProgram ] = useState<WashProgram | null>(null);
+
+  const handleSelect = (program: WashProgram) => {
+    setSelectedProgram(program);
+    open();
+    handleSelectProgram(program);
+  }
+
   return (
     <MantineProvider defaultColorScheme='dark'>
-      <Notification />
+      <Notifications position='top-right' />
 
       <div className='min-h-screen bg-[#0f172a] text-slate-200 font-sans'>
 
@@ -67,7 +80,8 @@ function App() {
               </Stack>
             </Group>
 
-            <ProgramSelector onSelect={handleSelectProgram} />
+            <ProgramSelector onSelect={handleSelect} />
+            <BookingModal opened={opened} onClose={close} program={selectedProgram} />
           </Container>
         </main>
 
@@ -85,5 +99,3 @@ function App() {
     </MantineProvider>
   )
 }
-
-export default App
