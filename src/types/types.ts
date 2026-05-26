@@ -10,6 +10,7 @@ export interface WashProgram {
 
 export interface Booking {
   id?: string
+  created_at: string
   start_time: string
   end_time: string
   box_number: BoxNumber
