@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import type { Booking, WashProgram } from "../../types/types";
 import { api } from "../../services/api";
 import dayjs from "dayjs";
-import { Badge, Card, Center, Container, Group, Loader, SimpleGrid, Stack, Text, Title } from "@mantine/core";
-import { Car, Clock, User, Wrench } from "lucide-react";
+import { Badge, Button, Card, Center, Container, Group, Loader, SimpleGrid, Stack, Text, Title } from "@mantine/core";
+import { Car, CheckCircle, Clock, Play, User, Wrench, XCircle } from "lucide-react";
 import { DateInput } from "@mantine/dates";
 
 const MOCK_PROGRAMS: WashProgram[] = [
@@ -73,6 +73,14 @@ export default function AdminDashboard() {
 
     setBookings(mockBookings);
   }, [selectedDate]);
+
+  const handleStatusChange = (bookingId: string | undefined, newStatus: Booking['status']) => {
+    if (!bookingId) return;
+
+    setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: newStatus } : b));
+  };
+
+
 
   const getBookingsByBox = (boxNum: number) =>
     bookings.filter(b => b.box_number === boxNum)
@@ -248,6 +256,44 @@ export default function AdminDashboard() {
                         <Group gap='xs' className='text-slate-500 border-t border-slate-700/50 pt-2 mt-2'>
                           <Clock size={12} />
                           <Text size='xs'>Заявка создана: {dayjs(booking.created_at).format('DD.MM в HH:mm')}</Text>
+                        </Group>
+
+                        <Group gap='xs' mt='md' grow>
+                          {booking.status === 'pending' && (
+                            <>
+                              <Button 
+                                size='xs'
+                                color='blue'
+                                variant='light'
+                                leftSection={<Play size={14} />}
+                                onClick={() => handleStatusChange(booking.id, 'in_progress')}
+                              >
+                                В бокс
+                              </Button>
+                              <Button 
+                                size='xs'
+                                color='red'
+                                variant='subtle'
+                                leftSection={<XCircle size={14} />}
+                                onClick={() => handleStatusChange(booking.id, 'cancelled')}
+                              >
+                                Отмена
+                              </Button>
+                            </>
+                          )}
+
+                          {booking.status === 'in_progress' && (
+                            <Button
+                              size='xs'
+                              color='green'
+                              variant='light'
+                              leftSection={<CheckCircle size={14} />}
+                              onClick={() => handleStatusChange(booking.id, 'completed')}
+                            >
+                              Завершить
+                            </Button>
+                          )}
+
                         </Group>
                       </Stack>
                     </Card>
