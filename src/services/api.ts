@@ -40,5 +40,27 @@ export const api = {
       .select();
     if (error) throw error;
     return data;
+  },
+
+  async updateBookingStatus(bookingId: string, newStatus: Booking['status']): Promise<void> {
+    console.log('Отправка в Supabase:', { id: bookingId, status: newStatus });
+    const { data, error, status, statusText } = await supabase
+      .from('bookings')
+      .update({ status: newStatus })
+      .eq('id', String(bookingId))
+      .select();
+
+    if (error) {
+      console.error('Критическая ошибка Supabase:', error);
+      alert(`Ошибка БД: ${error.message}`);
+      throw error;
+    }
+
+    console.log("Ответ сервера Supabase. HTTP Статус:", status, statusText);
+    console.log("Обновленные данные в базе:", data);
+
+    if (!data || data.length === 0) {
+      console.warn("Внимание: Ни одна строка в базе данных не была изменена!");
+    }
   }
 };
