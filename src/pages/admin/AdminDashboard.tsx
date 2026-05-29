@@ -1,3 +1,4 @@
+import { supabase } from "../../lib/supabase";
 import { useEffect, useState } from "react";
 import type { Booking, WashProgram } from "../../types/types";
 import { api } from "../../services/api";
@@ -30,6 +31,31 @@ export default function AdminDashboard() {
       .catch((err) => console.error('Ошибка инициализации данных:', err))
       .finally(() => setLoading(false));
 
+  }, [selectedDate]);
+
+  useEffect(() => {
+    const subscription = api.subscribeToBookings((payload) => {
+      const { eventType, new: newRow, old: oldRow } = payload;
+
+      setBookings((currentBookings) => {
+        if (eventType === 'INSERT') {
+          const isSameDay = dayjs(newRow.start_time).isSame(selectedDate, 'day');
+          if (!isSameDay) return currentBookings;
+
+          if (currentBookings.some(b => b.id === newRow.id)) return currentBookings;
+          return [...currentBookings, newRow];
+        }
+
+        if (eventType === 'DELETE') {
+          return currentBookings.filter(b => b.id !== oldRow.id);
+        }
+        return currentBookings;
+      });
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [selectedDate]);
 
   const handleStatusChange = async (bookingId: string | undefined, newStatus: Booking['status']) => {

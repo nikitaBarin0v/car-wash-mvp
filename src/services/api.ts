@@ -62,5 +62,24 @@ export const api = {
     if (!data || data.length === 0) {
       console.warn("Внимание: Ни одна строка в базе данных не была изменена!");
     }
+  },
+
+  subscribeToBookings(onChanges: (payload: any) => void) {
+    return supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'bookings'
+        },
+        (payload) => {
+          console.log('Получено Realtime изменения из БД:', payload);
+          onChanges(payload);
+        }
+      )
+      .subscribe();
   }
+
 };
