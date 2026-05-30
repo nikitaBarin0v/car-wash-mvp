@@ -2,7 +2,7 @@ import { useDisclosure } from "@mantine/hooks";
 import { BookingModal } from "../../components/BookingModal";
 import { Plus } from "lucide-react";
 import { supabase } from "../../lib/supabase";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Booking, WashProgram } from "../../types/types";
 import { api } from "../../services/api";
 import dayjs from "dayjs";
@@ -110,6 +110,23 @@ export default function AdminDashboard() {
     }
   };
 
+  const stats = useMemo(() => {
+    const completedBookings = bookings.filter(b => b.status === 'completed');
+
+    const totalRevenue = completedBookings.reduce((sum, booking) => {
+      const program = programs.find(p => p.id === booking.program_id);
+      return sum + (program ? program.price : 0);
+    }, 0);
+
+    const activeCarsCount = bookings.filter(b => b.status === 'in_progress' || b.status === 'completed').length;
+
+    const averageBill = completedBookings.length > 0
+      ? Math.round(totalRevenue / completedBookings.length)
+      : 0;
+
+    return { totalRevenue, activeCarsCount, averageBill }
+  }, [bookings, programs]);
+
   if (loading) return <Center h={400}><Loader size='xl' /></Center>;
 
   return (
@@ -147,6 +164,44 @@ export default function AdminDashboard() {
             </Button>
           </Group>
         </Group>
+
+        <SimpleGrid cols={{ base: 1, sm: 3 }} spacing='md'>
+          <Card withBorder padding='md' radius='md' className='bg-slate-900/60 border-slate-800'>
+            <Text size='xs' fw={700} className='text-slate-500 uppercase tracking-wider'>
+              Выручка за день 
+            </Text>
+            <Group justify='space-between' align='flex-end' mt='xs'>
+              <Text size='2xl' fw={900} className='text-green-400'>
+                {stats.totalRevenue} BYN
+              </Text>
+              <Badge color='green' variant='light'>Касса</Badge>
+            </Group>
+          </Card>
+
+          <Card withBorder padding='md' radius='md' className='bg-slate-900/60 border-slate-800'>
+            <Text size='xs' fw={700} className='text-slate-500 uppercase tracking-wider'>
+              Обслужено машин 
+            </Text>
+            <Group justify='space-between' align='flex-end' mt='xs'>
+              <Text size='2xl' fw={900} className='text-green-400'>
+                {stats.activeCarsCount} авто
+              </Text>
+              <Badge color='blue' variant='light'>Трафик</Badge>
+            </Group>
+          </Card>
+
+          <Card withBorder padding='md' radius='md' className='bg-slate-900/60 border-slate-800'>
+            <Text size='xs' fw={700} className='text-slate-500 uppercase tracking-wider'>
+              Средний чек 
+            </Text>
+            <Group justify='space-between' align='flex-end' mt='xs'>
+              <Text size='2xl' fw={900} className='text-green-400'>
+                {stats.averageBill} BYN
+              </Text>
+              <Badge color='yellow' variant='light'>Эффективность</Badge>
+            </Group>
+          </Card>
+        </SimpleGrid>
 
         <SimpleGrid cols={{ base: 1, md: 3 }} spacing='lg'>
           {[1, 2, 3].map((boxNum) => (
