@@ -1,3 +1,6 @@
+import { useDisclosure } from "@mantine/hooks";
+import { BookingModal } from "../../components/BookingModal";
+import { Plus } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useEffect, useState } from "react";
 import type { Booking, WashProgram } from "../../types/types";
@@ -12,6 +15,7 @@ export default function AdminDashboard() {
   const [programs, setPrograms] = useState<WashProgram[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
+  const [modalOpened, { open: openModal, close: closeModal }] = useDisclosure(false);
 
   useEffect(() => {
     if (!selectedDate) return;
@@ -117,19 +121,31 @@ export default function AdminDashboard() {
             <Text className="text-slate-400">Мониторинг загрузки боксов (3 бокса)</Text>
           </Stack>
 
-          <DateInput
-            value={selectedDate}
-            onChange={setSelectedDate}
-            label="Выбрать дату"
-            placeholder="Выберите день"
-            maxDate={dayjs().add(1, 'month').toDate()}
-            minDate={dayjs().subtract(1, 'week').toDate()}
-            className="w-64"
-            styles={{
-              input: { backgroundColor: '#1e293b', color: '#fff', borderColor: '#334155' },
-              label: { color: '#94a3b8', marginBottom: '4px' }
-            }}
-          />
+          <Group align='end' gap='md'>
+            <DateInput
+              value={selectedDate}
+              onChange={setSelectedDate}
+              label="Выбрать дату"
+              placeholder="Выберите день"
+              maxDate={dayjs().add(1, 'month').toDate()}
+              minDate={dayjs().subtract(1, 'week').toDate()}
+              className="w-64"
+              styles={{
+                input: { backgroundColor: '#1e293b', color: '#fff', borderColor: '#334155' },
+                label: { color: '#94a3b8', marginBottom: '4px' }
+              }}
+            />
+
+            <Button
+              color='blue'
+              size='sm'
+              leftSection={<Plus size={16} />}
+              onClick={openModal}
+              style={{ height: '36px', marginBottom: '2px' }}
+            >
+              Создать запись
+            </Button>
+          </Group>
         </Group>
 
         <SimpleGrid cols={{ base: 1, md: 3 }} spacing='lg'>
@@ -242,6 +258,8 @@ export default function AdminDashboard() {
           ))}
         </SimpleGrid>
       </Stack>
+
+      <BookingModal opened={modalOpened} onClose={closeModal} program={null} />
     </Container>
   );
 }
