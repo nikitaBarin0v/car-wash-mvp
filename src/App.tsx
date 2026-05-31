@@ -1,15 +1,18 @@
 import '@mantine/core/styles.css'
 import '@mantine/dates/styles.css'
 import '@mantine/notifications/styles.css'
-import { Button, Container, Group, MantineProvider, Stack, Text, Title } from '@mantine/core'
-import { Car, Clock, ShieldCheck, Phone, ArrowLeft, LayoutDashboard } from 'lucide-react'
+import { Button, Center, Container, Group, Loader, MantineProvider, Stack, Text, Title } from '@mantine/core'
+import { Car, Clock, ShieldCheck, Phone, ArrowLeft, LayoutDashboard, LogOut } from 'lucide-react'
 import type { WashProgram } from './types/types'
 import { ProgramSelector } from './components/ProgramSelector'
 import { useDisclosure } from '@mantine/hooks'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { BookingModal } from './components/BookingModal'
 import { Notifications } from '@mantine/notifications'
 import AdminDashboard from './pages/admin/AdminDashboard'
+import AdminLogin from './components/AdminLogin'
+import { api } from './services/api'
+
 
 export default function App() {
 
@@ -20,6 +23,21 @@ export default function App() {
   const [view, setView] = useState<'client' | 'admin'>('client');
   const [opened, { open, close }] = useDisclosure(false);
   const [selectedProgram, setSelectedProgram] = useState<WashProgram | null>(null);
+  const [user, setUser] = useState<any>(null);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
+  useEffect(() => {
+    api.getCurrentUser()
+      .then(setUser)
+      .catch(console.error)
+      .finally(() => setCheckingAuth(false))
+  }, []);
+
+  const handleLogout = async () => {
+    await api.signOut();
+    setUser(null);
+    setView('client');
+  }
 
   const handleSelect = (program: WashProgram) => {
     setSelectedProgram(program);
@@ -31,7 +49,11 @@ export default function App() {
     <MantineProvider defaultColorScheme='dark'>
       <Notifications position='top-right' />
 
-      {view === 'admin' ? (
+      {checkingAuth ? (
+        <div className='min-h-screen bg-[#0f172a]'>
+          <Center h='100vh'><Loader size='xl' /></Center>
+        </div>
+      ) : view === 'admin' ? (
         <div className='min-h-screen bg-[#0f172a] text-slate-200 font-sans'>
           <nav className='border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50'>
             <Container size='xl' className='h-16 flex items-center justify-between'>
@@ -41,13 +63,26 @@ export default function App() {
                   PRO<span className='text-blue-500'>WASH</span><span className='text-xs text-slate-500 ml-2'>ADMIN</span>
                 </Text>
               </Group>
-              <Button variant='light' color='blue' leftSection={<ArrowLeft size={16} />} onClick={() => setView('client')}>
-                На сайт клиента
-              </Button>
+
+              <Group gap='sm'>
+                <Button variant='light' color='blue' leftSection={<ArrowLeft size={16} />} onClick={() => setView('client')}>
+                  На сайт клиента
+                </Button>
+
+                {user && (
+                  <Button variant='light' color='red' leftSection={<LogOut size={16} />} onClick={handleLogout}>
+                    Выйти
+                  </Button>
+                )}
+              </Group>
             </Container>
           </nav>
 
-          <AdminDashboard />
+          {user ? (
+            <AdminDashboard />
+          ) : (
+            <AdminLogin onLoginSuccess={() => api.getCurrentUser().then(setUser)} />
+          )}
         </div>
       ) : (
         <div className='min-h-screen bg-[#0f172a] text-slate-200 font-sans'>
@@ -60,9 +95,16 @@ export default function App() {
                   PRO<span className='text-blue-500'>WASH</span>
                 </Text>
               </Group>
-              <Button variant='subtle' color='gray' leftSection={<Phone size={16} />}>
+
+              <Group gap='md'>
+                <Button variant='light' color={user ? 'green' : 'yellow'} size='sm' leftSection={<LayoutDashboard size={16} />} onClick={() => setView('admin')}>
+                  {user ? 'В панель' : 'Админка'}
+                </Button>
+
+                <Button variant='subtle' color='gray' leftSection={<Phone size={16} />}>
                 +375 (29) 000-00-00
               </Button>
+              </Group>
             </Container>
           </nav>
 
