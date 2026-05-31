@@ -1,7 +1,6 @@
 import { useDisclosure } from "@mantine/hooks";
 import { BookingModal } from "../../components/BookingModal";
 import { Plus } from "lucide-react";
-import { supabase } from "../../lib/supabase";
 import { useEffect, useMemo, useState } from "react";
 import type { Booking, WashProgram } from "../../types/types";
 import { api } from "../../services/api";
@@ -141,7 +140,7 @@ export default function AdminDashboard() {
           <Group align='end' gap='md'>
             <DateInput
               value={selectedDate}
-              onChange={setSelectedDate}
+              onChange={(val) => {setSelectedDate(val)}}
               label="Выбрать дату"
               placeholder="Выберите день"
               maxDate={dayjs().add(1, 'month').toDate()}

@@ -35,7 +35,7 @@ export function BookingModal({ opened, onClose, program: initialProgram }: Props
       clientName: (val) => (val.length < 2 ? 'Введите имя' : null),
       clientPhone: (val) => (val.length < 10 ? 'Введите кореектынй телефон' : null),
       carNumber: (val) => (val.length < 6 ? 'Введите госномер' : null),
-      programId: (val, values) => (!initialProgram && !val ? 'Выберите программу' : null),
+      programId: (val) => (!initialProgram && !val ? 'Выберите программу' : null),
     },
   });
 
@@ -56,10 +56,10 @@ export function BookingModal({ opened, onClose, program: initialProgram }: Props
 
   const currentProgram = initialProgram || selectedProgram;
 
-  const handleSubmit = async (values: typeof form.values) => {
+  const handleSubmit = async () => {
     if (!currentProgram || !selectedDate) return;
 
-    const [hours, minutes] = values.time.split(':').map(Number);
+    const [hours, minutes] = form.values.time.split(':').map(Number);
     const startDateTime = dayjs(selectedDate).hour(hours).minute(minutes).second(0).toDate();
 
     const freeBox = findAvailableBox(startDateTime, currentProgram.duration, existingBookings);
@@ -79,16 +79,16 @@ export function BookingModal({ opened, onClose, program: initialProgram }: Props
         end_time: dayjs(startDateTime).add(currentProgram.duration, 'minute').toISOString(),
         box_number: freeBox as 1 | 2 | 3,
         program_id: currentProgram.id,
-        client_name: values.clientName,
-        client_phone: values.clientPhone,
-        car_model: values.carModel,
-        car_number: values.carNumber,
+        client_name: form.values.clientName,
+        client_phone: form.values.clientPhone,
+        car_model: form.values.carModel,
+        car_number: form.values.carNumber,
         status: 'pending'
       });
 
       notifications.show({
         title: 'Успешная запись!',
-        message: `Ждем вас в боксе № ${freeBox}. Время: ${values.time}`,
+        message: `Ждем вас в боксе № ${freeBox}. Время: ${form.values.time}`,
         color: 'green',
       });
       onClose();
@@ -146,7 +146,7 @@ export function BookingModal({ opened, onClose, program: initialProgram }: Props
           <DateInput
             label='Выберите дату'
             value={selectedDate}
-            onChange={setSelectedDate}
+            onChange={(val) => {setSelectedDate(val);}}
             minDate={new Date()}
             required
             styles={{ input: { backgroundColor: '#0f172a', color: 'white' } }}
