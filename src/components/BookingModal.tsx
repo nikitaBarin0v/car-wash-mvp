@@ -146,7 +146,7 @@ export function BookingModal({ opened, onClose, program: initialProgram }: Props
           <DateInput
             label='Выберите дату'
             value={selectedDate}
-            onChange={(val) => {setSelectedDate(val);}}
+            onChange={(val) => {setSelectedDate(val as Date | null);}}
             minDate={new Date()}
             required
             styles={{ input: { backgroundColor: '#0f172a', color: 'white' } }}

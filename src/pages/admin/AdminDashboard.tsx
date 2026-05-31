@@ -140,7 +140,7 @@ export default function AdminDashboard() {
           <Group align='end' gap='md'>
             <DateInput
               value={selectedDate}
-              onChange={(val) => {setSelectedDate(val)}}
+              onChange={(val) => {setSelectedDate(val as Date | null)}}
               label="Выбрать дату"
               placeholder="Выберите день"
               maxDate={dayjs().add(1, 'month').toDate()}
